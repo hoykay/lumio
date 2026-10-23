@@ -2,6 +2,10 @@
 
 **Visual diagnostics for machine signals.**
 
+[🚀 Live Demo](https://lumio-theta-nine.vercel.app) · [🏗 Architecture](docs/architecture.md) · [📊 Evaluation Results](evaluation/evaluation_results.csv)
+
+> **OpenCV 5-powered agentic vision:** observe → decode → diagnose → guide → verify.
+
 Lumio is an agentic vision system that watches machine indicator lights, decodes temporal signal patterns, diagnoses grounded device states, recommends the next action, and visually verifies whether the intervention worked.
 
 > **Machines already talk. Lumio lets cameras understand them.**
