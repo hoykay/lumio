@@ -1,0 +1,2053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>Lumio — Visual Diagnostic Agent</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --border: #dbe3ee;
+      --text: #0f172a;
+      --muted: #64748b;
+
+      --blue: #2563eb;
+      --blue-soft: #eff6ff;
+
+      --green: #22c55e;
+      --green-soft: #f0fdf4;
+      --green-border: #bbf7d0;
+      --green-text: #15803d;
+
+      --amber: #f59e0b;
+      --amber-soft: #fffbeb;
+      --amber-border: #fde68a;
+      --amber-text: #b45309;
+
+      --red: #ef4444;
+      --red-soft: #fef2f2;
+      --red-border: #fecaca;
+      --red-text: #b91c1c;
+
+      --purple: #a855f7;
+      --purple-soft: #faf5ff;
+      --purple-border: #e9d5ff;
+      --purple-text: #7e22ce;
+
+      --dark: #101827;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+
+      font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+    }
+
+    .app {
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+
+    .topbar {
+      height: 72px;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      padding: 0 30px;
+
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(12px);
+
+      border-bottom: 1px solid var(--border);
+
+      position: sticky;
+      top: 0;
+
+      z-index: 20;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-mark {
+      width: 39px;
+      height: 39px;
+
+      border-radius: 12px;
+
+      position: relative;
+
+      background:
+        linear-gradient(
+          145deg,
+          #1d4ed8,
+          #3b82f6
+        );
+
+      box-shadow:
+        0 8px 20px rgba(37, 99, 235, 0.24);
+    }
+
+    .brand-mark::before {
+      content: "";
+
+      position: absolute;
+
+      width: 16px;
+      height: 16px;
+
+      border: 3px solid white;
+      border-radius: 50%;
+
+      top: 8px;
+      left: 8px;
+    }
+
+    .brand-mark::after {
+      content: "";
+
+      position: absolute;
+
+      width: 7px;
+      height: 7px;
+
+      border-radius: 50%;
+
+      background: white;
+
+      right: 7px;
+      bottom: 7px;
+
+      box-shadow:
+        0 0 9px rgba(255,255,255,.8);
+    }
+
+    .brand-name {
+      font-size: 19px;
+      font-weight: 800;
+
+      letter-spacing: -0.025em;
+    }
+
+    .brand-sub {
+      margin-top: 1px;
+
+      font-size: 11px;
+
+      color: var(--muted);
+    }
+
+    .system-status {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+
+      border: 1px solid var(--border);
+
+      background: white;
+
+      border-radius: 999px;
+
+      padding: 8px 12px;
+
+      font-size: 11px;
+      font-weight: 700;
+
+      color: #334155;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+
+      border-radius: 50%;
+
+      background: var(--green);
+
+      box-shadow:
+        0 0 7px rgba(34,197,94,.6);
+    }
+
+    /* LAYOUT */
+
+    .workspace {
+      max-width: 1240px;
+
+      margin: 0 auto;
+
+      padding: 30px 28px 36px;
+    }
+
+    .intro {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+
+      gap: 24px;
+
+      margin-bottom: 21px;
+    }
+
+    .intro h1 {
+      margin: 0;
+
+      font-size: 29px;
+      line-height: 1.15;
+
+      letter-spacing: -0.04em;
+    }
+
+    .intro p {
+      margin: 8px 0 0;
+
+      max-width: 690px;
+
+      color: var(--muted);
+
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .loop-label {
+      font-size: 11px;
+      font-weight: 750;
+
+      letter-spacing: 0.08em;
+
+      text-transform: uppercase;
+
+      color: var(--muted);
+
+      white-space: nowrap;
+    }
+
+    .main-grid {
+      display: grid;
+
+      grid-template-columns:
+        minmax(0, 1.45fr)
+        minmax(350px, 0.85fr);
+
+      gap: 18px;
+    }
+
+    .panel {
+      overflow: hidden;
+
+      background: var(--panel);
+
+      border: 1px solid var(--border);
+
+      border-radius: 18px;
+
+      box-shadow:
+        0 10px 32px rgba(15, 23, 42, 0.045);
+    }
+
+    .panel-header {
+      min-height: 61px;
+
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      gap: 12px;
+
+      padding: 0 18px;
+
+      background: #fff;
+
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-title {
+      font-size: 14px;
+      font-weight: 780;
+    }
+
+    .panel-meta {
+      font-size: 11px;
+
+      color: var(--muted);
+    }
+
+    /* DEVICE */
+
+    .device-area {
+      min-height: 338px;
+
+      display: flex;
+      align-items: center;
+
+      padding: 22px;
+
+      background:
+        radial-gradient(
+          circle at 50% 0%,
+          #1b2942 0%,
+          #101827 60%
+        );
+    }
+
+    .device-shell {
+      width: 100%;
+
+      padding: 24px;
+
+      border-radius: 18px;
+
+      border:
+        1px solid rgba(255,255,255,.10);
+
+      background:
+        rgba(255,255,255,.035);
+    }
+
+    .device-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+
+      margin-bottom: 26px;
+    }
+
+    .device-name {
+      color: white;
+
+      font-size: 15px;
+      font-weight: 760;
+    }
+
+    .device-model {
+      margin-top: 4px;
+
+      font-size: 11px;
+
+      color: #94a3b8;
+    }
+
+    .sim-label {
+      padding: 7px 10px;
+
+      border:
+        1px solid rgba(255,255,255,.12);
+
+      border-radius: 8px;
+
+      font-size: 9px;
+      font-weight: 700;
+
+      letter-spacing: 0.11em;
+
+      color: #94a3b8;
+    }
+
+    .lights {
+      display: grid;
+
+      grid-template-columns:
+        repeat(3, 1fr);
+
+      gap: 12px;
+    }
+
+    .light-slot {
+      padding: 22px 10px 15px;
+
+      text-align: center;
+
+      border-radius: 13px;
+
+      border:
+        1px solid rgba(255,255,255,.07);
+
+      background:
+        rgba(255,255,255,.045);
+    }
+
+    .light {
+      width: 30px;
+      height: 30px;
+
+      margin: 0 auto 13px;
+
+      border-radius: 50%;
+
+      background: var(--green);
+
+      box-shadow:
+        0 0 18px rgba(34,197,94,.8);
+
+      transition: all .18s ease;
+    }
+
+    .light-slot span {
+      color: #cbd5e1;
+
+      font-size: 10px;
+      font-weight: 700;
+
+      letter-spacing: .1em;
+    }
+
+    /* SIGNAL */
+
+    .signal-panel {
+      padding: 18px 20px 20px;
+
+      border-top:
+        1px solid var(--border);
+
+      background: #fbfcfe;
+    }
+
+    .signal-title-row {
+      display: flex;
+      justify-content: space-between;
+
+      margin-bottom: 13px;
+    }
+
+    .signal-title {
+      font-size: 12px;
+      font-weight: 780;
+    }
+
+    .signal-value {
+      font-size: 11px;
+
+      color: var(--muted);
+
+      font-weight: 650;
+    }
+
+    .waveform {
+      height: 60px;
+
+      display: flex;
+      align-items: center;
+
+      gap: 5px;
+
+      padding: 9px 12px;
+
+      overflow: hidden;
+
+      border:
+        1px solid var(--border);
+
+      border-radius: 10px;
+
+      background:
+        linear-gradient(
+          to right,
+          rgba(148,163,184,.10) 1px,
+          transparent 1px
+        ),
+        linear-gradient(
+          to bottom,
+          rgba(148,163,184,.08) 1px,
+          transparent 1px
+        );
+
+      background-size:
+        24px 100%,
+        100% 19px;
+    }
+
+    .pulse {
+      width: 18px;
+      height: 8px;
+
+      flex: 0 0 auto;
+
+      border-radius: 3px;
+
+      background: #cbd5e1;
+    }
+
+    .pulse.on {
+      height: 34px;
+    }
+
+    /* CONTROLS */
+
+    .controls {
+      display: grid;
+
+      grid-template-columns:
+        repeat(4, 1fr);
+
+      gap: 10px;
+
+      padding: 18px 20px 20px;
+
+      border-top:
+        1px solid var(--border);
+    }
+
+    button {
+      padding: 12px 10px;
+
+      cursor: pointer;
+
+      border-radius: 11px;
+
+      font-size: 12px;
+      font-weight: 760;
+
+      transition:
+        transform .15s ease,
+        box-shadow .15s ease,
+        filter .15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    #healthyBtn {
+      background: var(--green-soft);
+
+      border:
+        1px solid var(--green-border);
+
+      color: var(--green-text);
+    }
+
+    #healthyBtn.active {
+      background: #dcfce7;
+
+      border-color: #86efac;
+
+      box-shadow:
+        0 0 0 3px rgba(34,197,94,.09);
+    }
+
+    #wanBtn {
+      background: var(--amber-soft);
+
+      border:
+        1px solid var(--amber-border);
+
+      color: var(--amber-text);
+    }
+
+    #wanBtn.active {
+      background: #fef3c7;
+
+      border-color: #fcd34d;
+
+      box-shadow:
+        0 0 0 3px rgba(245,158,11,.09);
+    }
+
+    #configBtn {
+      background: var(--red-soft);
+
+      border:
+        1px solid var(--red-border);
+
+      color: var(--red-text);
+    }
+
+    #configBtn.active {
+      background: #fee2e2;
+
+      border-color: #fca5a5;
+
+      box-shadow:
+        0 0 0 3px rgba(239,68,68,.08);
+    }
+
+    #unknownBtn {
+      background: var(--purple-soft);
+
+      border:
+        1px solid var(--purple-border);
+
+      color: var(--purple-text);
+    }
+
+    #unknownBtn.active {
+      background: #f3e8ff;
+
+      border-color: #d8b4fe;
+
+      box-shadow:
+        0 0 0 3px rgba(168,85,247,.08);
+    }
+
+    /* AGENT CONSOLE */
+
+    .console {
+      display: flex;
+      flex-direction: column;
+
+      min-height: 100%;
+    }
+
+    .console-body {
+      flex: 1;
+
+      display: flex;
+      flex-direction: column;
+
+      gap: 14px;
+
+      padding: 18px;
+    }
+
+    .agent-state {
+      padding: 14px 15px;
+
+      border-left:
+        3px solid var(--blue);
+
+      border-radius:
+        0 12px 12px 0;
+
+      background: #f8fbff;
+
+      transition: all .2s ease;
+    }
+
+    .agent-state.healthy {
+      border-left-color: var(--green);
+
+      background: var(--green-soft);
+    }
+
+    .agent-state.wan {
+      border-left-color: var(--amber);
+
+      background: var(--amber-soft);
+    }
+
+    .agent-state.config {
+      border-left-color: var(--red);
+
+      background: var(--red-soft);
+    }
+
+    .agent-state.unknown {
+      border-left-color: var(--purple);
+
+      background: var(--purple-soft);
+    }
+
+    .agent-state.recovered {
+      border-left-color: var(--green);
+
+      background:
+        linear-gradient(
+          90deg,
+          #ecfdf5,
+          #f0fdf4
+        );
+    }
+
+    .eyebrow {
+      margin-bottom: 6px;
+
+      color: var(--muted);
+
+      font-size: 9px;
+      font-weight: 780;
+
+      letter-spacing: .11em;
+
+      text-transform: uppercase;
+    }
+
+    .agent-title {
+      font-size: 18px;
+      font-weight: 820;
+
+      letter-spacing: -.025em;
+    }
+
+    .agent-desc {
+      margin-top: 5px;
+
+      color: var(--muted);
+
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .metric-grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(2, 1fr);
+
+      gap: 9px;
+    }
+
+    .metric {
+      padding: 12px;
+
+      border:
+        1px solid var(--border);
+
+      border-radius: 12px;
+    }
+
+    .metric-label {
+      margin-bottom: 7px;
+
+      color: var(--muted);
+
+      font-size: 9px;
+      font-weight: 750;
+
+      letter-spacing: .08em;
+
+      text-transform: uppercase;
+    }
+
+    .metric-value {
+      font-size: 14px;
+
+      font-weight: 770;
+    }
+
+    .decision {
+      padding: 14px;
+
+      border:
+        1px solid var(--border);
+
+      border-radius: 12px;
+    }
+
+    .decision-title {
+      margin-bottom: 9px;
+
+      font-size: 12px;
+      font-weight: 780;
+    }
+
+    .decision-line {
+      display: flex;
+
+      gap: 9px;
+
+      align-items: flex-start;
+
+      padding: 9px 0;
+
+      border-top:
+        1px solid #eef2f7;
+    }
+
+    .decision-line:first-of-type {
+      border-top: 0;
+    }
+
+    .decision-icon {
+      width: 21px;
+      height: 21px;
+
+      flex: 0 0 auto;
+
+      display: grid;
+      place-items: center;
+
+      border-radius: 6px;
+
+      background: var(--blue-soft);
+
+      color: var(--blue);
+
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .decision-label {
+      font-size: 10px;
+
+      color: var(--muted);
+    }
+
+    .decision-text {
+      margin-top: 2px;
+
+      font-size: 12px;
+      font-weight: 680;
+
+      line-height: 1.4;
+    }
+
+    /* RECOVERY */
+
+    .recovery-card {
+      display: none;
+
+      padding: 14px;
+
+      border:
+        1px solid #bbf7d0;
+
+      border-radius: 12px;
+
+      background: #f0fdf4;
+    }
+
+    .recovery-card.visible {
+      display: block;
+    }
+
+    .recovery-top {
+      display: flex;
+      align-items: center;
+
+      gap: 9px;
+    }
+
+    .recovery-check {
+      width: 27px;
+      height: 27px;
+
+      display: grid;
+      place-items: center;
+
+      border-radius: 50%;
+
+      background: var(--green);
+
+      color: white;
+
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .recovery-title {
+      font-size: 13px;
+      font-weight: 800;
+
+      color: #166534;
+    }
+
+    .recovery-desc {
+      margin-top: 8px;
+
+      color: #4b5563;
+
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .safety-note {
+      margin-top: auto;
+
+      padding-top: 14px;
+
+      border-top:
+        1px solid var(--border);
+
+      color: var(--muted);
+
+      font-size: 10px;
+      line-height: 1.55;
+    }
+
+    /* PIPELINE */
+
+    .pipeline {
+      margin-top: 18px;
+
+      display: grid;
+
+      grid-template-columns:
+        repeat(5, 1fr);
+
+      padding: 14px 18px;
+
+      border:
+        1px solid var(--border);
+
+      border-radius: 14px;
+
+      background: white;
+    }
+
+    .pipeline-step {
+      position: relative;
+
+      padding: 5px 8px;
+
+      text-align: center;
+    }
+
+    .pipeline-step:not(:last-child)::after {
+      content: "→";
+
+      position: absolute;
+
+      top: 16px;
+      right: -5px;
+
+      color: #94a3b8;
+
+      font-weight: 700;
+    }
+
+    .pipeline-step strong {
+      display: block;
+
+      font-size: 10px;
+
+      letter-spacing: .04em;
+    }
+
+    .pipeline-step span {
+      display: block;
+
+      margin-top: 3px;
+
+      color: var(--muted);
+
+      font-size: 9px;
+    }
+
+    @media (max-width: 980px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .controls {
+        grid-template-columns:
+          repeat(2,1fr);
+      }
+
+      .intro {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <header class="topbar">
+
+    <div class="brand">
+
+      <div class="brand-mark"></div>
+
+      <div>
+        <div class="brand-name">
+          Lumio
+        </div>
+
+        <div class="brand-sub">
+          Visual Diagnostic Agent
+        </div>
+      </div>
+
+    </div>
+
+    <div class="system-status">
+
+      <div class="status-pill">
+        OpenCV 5
+      </div>
+
+      <div class="status-pill">
+        <span class="status-dot"></span>
+        Vision engine ready
+      </div>
+
+    </div>
+
+  </header>
+
+  <main class="workspace">
+
+    <div class="intro">
+
+      <div>
+
+        <h1>
+          Machine signal diagnostics
+        </h1>
+
+        <p>
+          Lumio reads temporal indicator signals,
+          reasons over device state, guides the next action,
+          and verifies whether recovery actually occurred.
+        </p>
+
+      </div>
+
+      <div class="loop-label">
+        Observe → Reason → Act → Verify
+      </div>
+
+    </div>
+
+    <div class="main-grid">
+
+      <!-- DEVICE -->
+
+      <section class="panel">
+
+        <div class="panel-header">
+
+          <div>
+
+            <div class="panel-title">
+              Device signal workspace
+            </div>
+
+            <div class="panel-meta">
+              LUMIO TEST ROUTER X1
+            </div>
+
+          </div>
+
+          <div class="panel-meta">
+            Simulator input
+          </div>
+
+        </div>
+
+        <div class="device-area">
+
+          <div class="device-shell">
+
+            <div class="device-top">
+
+              <div>
+
+                <div class="device-name">
+                  Network Gateway
+                </div>
+
+                <div class="device-model">
+                  Three-indicator diagnostic panel
+                </div>
+
+              </div>
+
+              <div class="sim-label">
+                TEST DEVICE
+              </div>
+
+            </div>
+
+            <div class="lights">
+
+              <div class="light-slot">
+
+                <div
+                  class="light"
+                  style="
+                    background:#22c55e;
+                    box-shadow:0 0 18px rgba(34,197,94,.8);
+                  ">
+                </div>
+
+                <span>POWER</span>
+
+              </div>
+
+              <div class="light-slot">
+
+                <div
+                  class="light"
+                  id="wanLight">
+                </div>
+
+                <span>WAN</span>
+
+              </div>
+
+              <div class="light-slot">
+
+                <div
+                  class="light"
+                  style="
+                    background:#22c55e;
+                    box-shadow:0 0 18px rgba(34,197,94,.8);
+                  ">
+                </div>
+
+                <span>WIFI</span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="signal-panel">
+
+          <div class="signal-title-row">
+
+            <div class="signal-title">
+              Temporal signal
+            </div>
+
+            <div
+              class="signal-value"
+              id="signalSummary">
+              Solid green
+            </div>
+
+          </div>
+
+          <div
+            class="waveform"
+            id="waveform">
+          </div>
+
+        </div>
+
+        <div class="controls">
+
+          <button
+            id="healthyBtn"
+            onclick="healthy()">
+            Healthy
+          </button>
+
+          <button
+            id="wanBtn"
+            onclick="wanFailure()">
+            WAN Failure
+          </button>
+
+          <button
+            id="configBtn"
+            onclick="configError()">
+            Config Error
+          </button>
+
+          <button
+            id="unknownBtn"
+            onclick="unknownPattern()">
+            Unknown Pattern
+          </button>
+
+        </div>
+
+      </section>
+
+      <!-- AGENT -->
+
+      <aside class="panel console">
+
+        <div class="panel-header">
+
+          <div>
+
+            <div class="panel-title">
+              Agent console
+            </div>
+
+            <div class="panel-meta">
+              Visual reasoning state
+            </div>
+
+          </div>
+
+          <div class="panel-meta">
+            LIVE
+          </div>
+
+        </div>
+
+        <div class="console-body">
+
+          <div
+            class="agent-state healthy"
+            id="agentState">
+
+            <div class="eyebrow">
+              Current signal
+            </div>
+
+            <div
+              class="agent-title"
+              id="agentTitle">
+              Healthy
+            </div>
+
+            <div
+              class="agent-desc"
+              id="agentDescription">
+
+              Stable green indicator.
+              No fault pattern present.
+
+            </div>
+
+          </div>
+
+          <div class="metric-grid">
+
+            <div class="metric">
+
+              <div class="metric-label">
+                Color
+              </div>
+
+              <div
+                class="metric-value"
+                id="metricColor">
+                Green
+              </div>
+
+            </div>
+
+            <div class="metric">
+
+              <div class="metric-label">
+                Pattern
+              </div>
+
+              <div
+                class="metric-value"
+                id="metricPattern">
+                Solid
+              </div>
+
+            </div>
+
+            <div class="metric">
+
+              <div class="metric-label">
+                Blink count
+              </div>
+
+              <div
+                class="metric-value"
+                id="metricBlinks">
+                —
+              </div>
+
+            </div>
+
+            <div class="metric">
+
+              <div class="metric-label">
+                Long pause
+              </div>
+
+              <div
+                class="metric-value"
+                id="metricPause">
+                —
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="decision">
+
+            <div class="decision-title">
+              Agent decision
+            </div>
+
+            <div class="decision-line">
+
+              <div class="decision-icon">
+                1
+              </div>
+
+              <div>
+
+                <div class="decision-label">
+                  Classification
+                </div>
+
+                <div
+                  class="decision-text"
+                  id="decisionClassification">
+                  No fault detected
+                </div>
+
+              </div>
+
+            </div>
+
+            <div class="decision-line">
+
+              <div class="decision-icon">
+                2
+              </div>
+
+              <div>
+
+                <div class="decision-label">
+                  Next action
+                </div>
+
+                <div
+                  class="decision-text"
+                  id="decisionAction">
+                  Continue monitoring
+                </div>
+
+              </div>
+
+            </div>
+
+            <div class="decision-line">
+
+              <div class="decision-icon">
+                3
+              </div>
+
+              <div>
+
+                <div class="decision-label">
+                  Verification
+                </div>
+
+                <div
+                  class="decision-text"
+                  id="decisionVerification">
+                  Healthy state visible
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div
+            class="recovery-card"
+            id="recoveryCard">
+
+            <div class="recovery-top">
+
+              <div class="recovery-check">
+                ✓
+              </div>
+
+              <div class="recovery-title">
+                Recovery state ready for verification
+              </div>
+
+            </div>
+
+            <div class="recovery-desc">
+              The simulated device has returned to a solid green
+              indicator after a detected fault. Lumio's vision engine
+              can now re-observe the device and confirm recovery.
+            </div>
+
+          </div>
+
+          <div class="safety-note">
+
+            Lumio does not force uncertain visual evidence
+            into a diagnosis. Incomplete observations trigger
+            another look; unsupported patterns are escalated
+            for human review.
+
+          </div>
+
+        </div>
+
+      </aside>
+
+    </div>
+
+    <!-- PIPELINE -->
+
+    <div class="pipeline">
+
+      <div class="pipeline-step">
+        <strong>SEE</strong>
+        <span>Locate indicator</span>
+      </div>
+
+      <div class="pipeline-step">
+        <strong>DECODE</strong>
+        <span>Measure timing</span>
+      </div>
+
+      <div class="pipeline-step">
+        <strong>DIAGNOSE</strong>
+        <span>Match profile</span>
+      </div>
+
+      <div class="pipeline-step">
+        <strong>GUIDE</strong>
+        <span>Recommend action</span>
+      </div>
+
+      <div class="pipeline-step">
+        <strong>VERIFY</strong>
+        <span>Re-observe result</span>
+      </div>
+
+    </div>
+
+  </main>
+
+</div>
+
+<script>
+
+  const wanLight =
+    document.getElementById("wanLight");
+
+  const waveform =
+    document.getElementById("waveform");
+
+  const signalSummary =
+    document.getElementById("signalSummary");
+
+  const agentState =
+    document.getElementById("agentState");
+
+  const agentTitle =
+    document.getElementById("agentTitle");
+
+  const agentDescription =
+    document.getElementById("agentDescription");
+
+  const metricColor =
+    document.getElementById("metricColor");
+
+  const metricPattern =
+    document.getElementById("metricPattern");
+
+  const metricBlinks =
+    document.getElementById("metricBlinks");
+
+  const metricPause =
+    document.getElementById("metricPause");
+
+  const decisionClassification =
+    document.getElementById(
+      "decisionClassification"
+    );
+
+  const decisionAction =
+    document.getElementById(
+      "decisionAction"
+    );
+
+  const decisionVerification =
+    document.getElementById(
+      "decisionVerification"
+    );
+
+  const recoveryCard =
+    document.getElementById(
+      "recoveryCard"
+    );
+
+
+  let running = false;
+
+  let patternTimer = null;
+
+  let previousFault = null;
+
+
+  function clearButtons() {
+
+    document
+      .querySelectorAll("button")
+      .forEach(button => {
+
+        button.classList.remove(
+          "active"
+        );
+
+      });
+
+  }
+
+
+  function setActiveButton(id) {
+
+    clearButtons();
+
+    document
+      .getElementById(id)
+      .classList.add("active");
+
+  }
+
+
+  function setAgentState(type) {
+
+    agentState.className =
+      `agent-state ${type}`;
+
+  }
+
+
+  function setLight(
+    color,
+    glow
+  ) {
+
+    wanLight.style.background =
+      color;
+
+    wanLight.style.boxShadow =
+      `0 0 18px ${glow}`;
+
+  }
+
+
+  function clearPattern() {
+
+    running = false;
+
+    if (patternTimer) {
+
+      clearTimeout(
+        patternTimer
+      );
+
+      patternTimer = null;
+
+    }
+
+  }
+
+
+  function hideRecovery() {
+
+    recoveryCard
+      .classList
+      .remove("visible");
+
+  }
+
+
+  function drawWaveform(
+    blinkCount,
+    color
+  ) {
+
+    waveform.innerHTML = "";
+
+    if (blinkCount === 0) {
+
+      for (
+        let i = 0;
+        i < 14;
+        i++
+      ) {
+
+        const pulse =
+          document.createElement(
+            "div"
+          );
+
+        pulse.className =
+          "pulse on";
+
+        pulse.style.height =
+          "22px";
+
+        pulse.style.background =
+          color;
+
+        waveform.appendChild(
+          pulse
+        );
+
+      }
+
+      return;
+
+    }
+
+
+    for (
+      let i = 0;
+      i < blinkCount;
+      i++
+    ) {
+
+      const on =
+        document.createElement(
+          "div"
+        );
+
+      on.className =
+        "pulse on";
+
+      on.style.background =
+        color;
+
+      waveform.appendChild(on);
+
+
+      const off =
+        document.createElement(
+          "div"
+        );
+
+      off.className =
+        "pulse";
+
+      waveform.appendChild(off);
+
+    }
+
+
+    const pause =
+      document.createElement(
+        "div"
+      );
+
+    pause.className =
+      "pulse";
+
+    pause.style.width =
+      "56px";
+
+    waveform.appendChild(
+      pause
+    );
+
+  }
+
+
+  function healthy() {
+
+    clearPattern();
+
+    setActiveButton(
+      "healthyBtn"
+    );
+
+    setLight(
+      "#22c55e",
+      "rgba(34,197,94,.8)"
+    );
+
+
+    drawWaveform(
+      0,
+      "#22c55e"
+    );
+
+
+    signalSummary.innerText =
+      "Solid green";
+
+
+    metricColor.innerText =
+      "Green";
+
+    metricPattern.innerText =
+      "Solid";
+
+    metricBlinks.innerText =
+      "—";
+
+    metricPause.innerText =
+      "—";
+
+
+    if (previousFault) {
+
+      setAgentState(
+        "recovered"
+      );
+
+      agentTitle.innerText =
+        "Recovery observed";
+
+      agentDescription.innerText =
+        "The indicator has returned to a stable green state after the fault condition.";
+
+      decisionClassification.innerText =
+        "Healthy state observed";
+
+      decisionAction.innerText =
+        "Re-observe with Lumio vision";
+
+      decisionVerification.innerText =
+        "Await camera confirmation";
+
+      recoveryCard
+        .classList
+        .add("visible");
+
+      previousFault = null;
+
+    }
+
+    else {
+
+      setAgentState(
+        "healthy"
+      );
+
+      agentTitle.innerText =
+        "Healthy";
+
+      agentDescription.innerText =
+        "Stable green indicator. No fault pattern present.";
+
+      decisionClassification.innerText =
+        "No fault detected";
+
+      decisionAction.innerText =
+        "Continue monitoring";
+
+      decisionVerification.innerText =
+        "Healthy state visible";
+
+      hideRecovery();
+
+    }
+
+  }
+
+
+  function runPattern(
+    color,
+    glow,
+    blinkCount,
+    onTime,
+    offTime,
+    pauseTime
+  ) {
+
+    clearPattern();
+
+    running = true;
+
+
+    function cycle() {
+
+      if (!running) return;
+
+
+      let blink = 0;
+
+
+      function nextBlink() {
+
+        if (!running) return;
+
+
+        if (
+          blink >= blinkCount
+        ) {
+
+          setLight(
+            "#1f2937",
+            "transparent"
+          );
+
+          patternTimer =
+            setTimeout(
+              cycle,
+              pauseTime
+            );
+
+          return;
+
+        }
+
+
+        setLight(
+          color,
+          glow
+        );
+
+
+        patternTimer =
+          setTimeout(
+            () => {
+
+              setLight(
+                "#1f2937",
+                "transparent"
+              );
+
+              blink++;
+
+
+              patternTimer =
+                setTimeout(
+                  nextBlink,
+                  offTime
+                );
+
+            },
+            onTime
+          );
+
+      }
+
+
+      nextBlink();
+
+    }
+
+
+    cycle();
+
+  }
+
+
+  function wanFailure() {
+
+    hideRecovery();
+
+    previousFault =
+      "WAN FAILURE";
+
+
+    setActiveButton(
+      "wanBtn"
+    );
+
+    setAgentState(
+      "wan"
+    );
+
+
+    signalSummary.innerText =
+      "3 amber blinks • 1.8s pause";
+
+
+    agentTitle.innerText =
+      "WAN failure";
+
+
+    agentDescription.innerText =
+      "Temporal amber signal matches the WAN failure reference pattern.";
+
+
+    metricColor.innerText =
+      "Amber";
+
+    metricPattern.innerText =
+      "Blinking";
+
+    metricBlinks.innerText =
+      "3";
+
+    metricPause.innerText =
+      "1.8s";
+
+
+    decisionClassification.innerText =
+      "WAN failure profile";
+
+    decisionAction.innerText =
+      "Check WAN cable connection";
+
+    decisionVerification.innerText =
+      "Re-observe after intervention";
+
+
+    drawWaveform(
+      3,
+      "#f59e0b"
+    );
+
+
+    runPattern(
+      "#f59e0b",
+      "rgba(245,158,11,.8)",
+      3,
+      420,
+      180,
+      1800
+    );
+
+  }
+
+
+  function configError() {
+
+    hideRecovery();
+
+    previousFault =
+      "CONFIG ERROR";
+
+
+    setActiveButton(
+      "configBtn"
+    );
+
+    setAgentState(
+      "config"
+    );
+
+
+    signalSummary.innerText =
+      "2 red blinks • 2.0s pause";
+
+
+    agentTitle.innerText =
+      "Configuration error";
+
+
+    agentDescription.innerText =
+      "Temporal red signal matches the configuration error reference pattern.";
+
+
+    metricColor.innerText =
+      "Red";
+
+    metricPattern.innerText =
+      "Blinking";
+
+    metricBlinks.innerText =
+      "2";
+
+    metricPause.innerText =
+      "2.0s";
+
+
+    decisionClassification.innerText =
+      "Config error profile";
+
+    decisionAction.innerText =
+      "Review device configuration";
+
+    decisionVerification.innerText =
+      "Re-observe after intervention";
+
+
+    drawWaveform(
+      2,
+      "#ef4444"
+    );
+
+
+    runPattern(
+      "#ef4444",
+      "rgba(239,68,68,.8)",
+      2,
+      350,
+      250,
+      2000
+    );
+
+  }
+
+
+  function unknownPattern() {
+
+    hideRecovery();
+
+    previousFault = null;
+
+
+    setActiveButton(
+      "unknownBtn"
+    );
+
+    setAgentState(
+      "unknown"
+    );
+
+
+    signalSummary.innerText =
+      "4 purple blinks • 1.2s pause";
+
+
+    agentTitle.innerText =
+      "Unsupported pattern";
+
+
+    agentDescription.innerText =
+      "A complete signal is visible, but no grounded diagnostic profile matches it.";
+
+
+    metricColor.innerText =
+      "Purple";
+
+    metricPattern.innerText =
+      "Blinking";
+
+    metricBlinks.innerText =
+      "4";
+
+    metricPause.innerText =
+      "1.2s";
+
+
+    decisionClassification.innerText =
+      "No grounded match";
+
+    decisionAction.innerText =
+      "Escalate for human review";
+
+    decisionVerification.innerText =
+      "Do not guess";
+
+
+    drawWaveform(
+      4,
+      "#a855f7"
+    );
+
+
+    runPattern(
+      "#a855f7",
+      "rgba(168,85,247,.8)",
+      4,
+      250,
+      180,
+      1200
+    );
+
+  }
+
+
+  healthy();
+
+</script>
+
+</body>
+</html>
