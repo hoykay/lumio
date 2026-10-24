@@ -177,6 +177,23 @@ After the simulated corrective action, Lumio continued observing the indicator, 
 
 This is a real-camera functional sanity test, not a claim of general real-world diagnostic accuracy.
 
+### 30-Trial Camera Validation
+
+A controlled camera-in-the-loop validation matrix was run across six scenarios:
+
+- Healthy monitoring: 5/5 full passes
+- WAN Failure: 4/5 correct diagnoses, 1 safe abstention
+- Configuration Error: 5/5 full passes
+- Unsupported Pattern: 5/5 safe rejections
+- Incomplete / Mid-cycle Capture: 4/5 full passes, 1 safe abstention
+- WAN Failure → Healthy Recovery: 5/5 full passes
+
+**Overall: 28/30 full passes, 2/30 safe abstentions, and 0 unsafe misdiagnoses.**
+
+The two non-passing trials did not produce an incorrect diagnosis; Lumio remained in an uncertainty state instead.
+
+Detailed trial-level results are available in `evaluation/camera_validation.csv`.
+
 ## Setup & Reproducibility
 
 Lumio was tested with Python and the following pinned dependencies:

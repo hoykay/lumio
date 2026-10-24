@@ -1,0 +1,31 @@
+scenario,trial,expected_behavior,observed_result,confidence,pass_fail,notes
+Healthy,1,No fault diagnosis,Stable healthy monitoring,,PASS,No false diagnosis or unknown signal
+Healthy,2,No fault diagnosis,Stable healthy monitoring,,PASS,No false diagnosis or unknown signal
+Healthy,3,No fault diagnosis,Stable healthy monitoring,,PASS,No false diagnosis or unknown signal
+Healthy,4,No fault diagnosis,Stable healthy monitoring,,PASS,No false diagnosis or unknown signal
+Healthy,5,No fault diagnosis,Stable healthy monitoring,,PASS,No false diagnosis or unknown signal
+WAN Failure,1,WAN Failure,WAN Failure after re-observation,92.0%,PASS,Initial incomplete cycles safely abstained
+WAN Failure,2,WAN Failure,WAN Failure after re-observation,93.6%,PASS,Two incomplete cycles safely abstained
+WAN Failure,3,WAN Failure,Unknown signal only,48.6%,SAFE_ABSTENTION,No unsafe misdiagnosis
+WAN Failure,4,WAN Failure,WAN Failure,92.0%,PASS,Clean cycle confirmed diagnosis
+WAN Failure,5,WAN Failure,WAN Failure after re-observation,91.1%,PASS,Initial incomplete cycles safely abstained
+Configuration Error,1,Configuration Error,Configuration Error,86.8%,PASS,Clean cycle confirmed diagnosis
+Configuration Error,2,Configuration Error,Configuration Error,90.5%,PASS,Repeated correct detections
+Configuration Error,3,Configuration Error,Configuration Error,90.0%,PASS,Repeated correct detections
+Configuration Error,4,Configuration Error,Configuration Error,87.7%,PASS,Repeated correct detections
+Configuration Error,5,Configuration Error,Configuration Error,87.9%,PASS,Clean cycle confirmed diagnosis
+Unsupported Pattern,1,Unknown / human review,Unknown signal,53.9%,PASS,Purple 4-blink pattern safely rejected
+Unsupported Pattern,2,Unknown / human review,Unknown signal,52.7%,PASS,No false known-profile diagnosis
+Unsupported Pattern,3,Unknown / human review,Unknown signal,54.5%,PASS,Repeated safe rejection
+Unsupported Pattern,4,Unknown / human review,Unknown signal,49.3%,PASS,One cycle merged to 3 blinks but remained safe
+Unsupported Pattern,5,Unknown / human review,Unknown signal,37.3%,PASS,No false known-profile diagnosis
+Incomplete / Mid-cycle Capture,1,Abstain then recover,Unknown then WAN Failure,85.0%,PASS,Partial 1-blink capture safely re-observed
+Incomplete / Mid-cycle Capture,2,Abstain then recover,Unknown then WAN Failure,84.4%,PASS,Partial 2-blink capture safely re-observed
+Incomplete / Mid-cycle Capture,3,Abstain then recover,Unknown signal only,43.8%,SAFE_ABSTENTION,No unsafe misdiagnosis
+Incomplete / Mid-cycle Capture,4,Abstain then recover,Unknown then WAN Failure,91.3%,PASS,Partial capture safely re-observed
+Incomplete / Mid-cycle Capture,5,Abstain then recover,Unknown then WAN Failure,91.3%,PASS,Partial capture safely re-observed
+WAN Failure → Healthy Recovery,1,Recovery verified + AWS log,Recovery verified,94.0%,PASS,AWS session logged
+WAN Failure → Healthy Recovery,2,Recovery verified + AWS log,Recovery verified,91.7%,PASS,AWS session logged
+WAN Failure → Healthy Recovery,3,Recovery verified + AWS log,Recovery verified,80.8%,PASS,AWS session logged
+WAN Failure → Healthy Recovery,4,Recovery verified + AWS log,Recovery verified,75.2%,PASS,AWS session logged
+WAN Failure → Healthy Recovery,5,Recovery verified + AWS log,Recovery verified,91.4%,PASS,AWS session logged

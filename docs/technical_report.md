@@ -253,6 +253,27 @@ This validation is intended as a **functional camera-in-the-loop sanity test**, 
 
 ---
 
+### 30-Trial Camera Validation Matrix
+
+A 30-trial camera-in-the-loop validation matrix was performed across six scenarios:
+
+| Scenario | Result |
+|---|---:|
+| Healthy monitoring | 5/5 full passes |
+| WAN Failure | 4/5 correct diagnoses + 1 safe abstention |
+| Configuration Error | 5/5 full passes |
+| Unsupported Pattern | 5/5 safe rejections |
+| Incomplete / Mid-cycle Capture | 4/5 full passes + 1 safe abstention |
+| WAN Failure → Healthy Recovery | 5/5 full passes |
+
+**Overall result: 28/30 full passes, 2/30 safe abstentions, and 0 unsafe misdiagnoses.**
+
+In both non-passing trials, Lumio remained uncertain rather than producing an incorrect known-profile diagnosis. Therefore, all 30 trials avoided an unsafe misdiagnosis.
+
+Trial-level evidence is stored in `evaluation/camera_validation.csv`.
+
+These results remain a controlled camera-in-the-loop validation of the competition prototype and should not be interpreted as broad field accuracy.
+
 ## 9. Recovery Verification
 
 Classification alone does not demonstrate whether the recommended intervention solved the problem.
