@@ -587,18 +587,25 @@ while True:
 
                     if stable_state == "ON":
                         global_healthy_color = last_on_color
-                        
+
                         last_led_ratio = led_ratio
 
-                        blink_count += 1
+                        if (
+                            last_on_color == "GREEN"
+                            and duration >= 1.5
+                        ):
+                            reset_cycle()
 
-                        on_durations.append(
-                            duration
-                        )
+                        else:
+                            blink_count += 1
 
-                        cycle_colors.append(
-                            last_on_color
-                        )
+                            on_durations.append(
+                                duration
+                            )
+
+                            cycle_colors.append(
+                                last_on_color
+                            )
 
                     elif stable_state == "OFF":
 
