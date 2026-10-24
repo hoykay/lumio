@@ -165,6 +165,18 @@ Solid GREEN
 RECOVERY VERIFIED
         ↓
 Session logged to AWS
+## Real Camera Validation
+
+Lumio was sanity-tested end-to-end using a live camera feed and the OpenCV 5 vision engine.
+
+During a WAN failure test, Lumio observed a repeating amber temporal pattern of three blinks, approximately 0.47-0.50 s ON with short 0.13-0.17 s OFF intervals and a ~1.9 s long pause. Complete cycles were matched to the WAN failure profile at approximately 91-93% confidence.
+
+The system also demonstrated safe uncertainty handling: an incomplete initial observation was classified as an unknown signal instead of forcing a diagnosis.
+
+After the simulated corrective action, Lumio continued observing the indicator, verified recovery when the signal became sustained GREEN, and logged the verified recovery session to AWS DynamoDB.
+
+This is a real-camera functional sanity test, not a claim of general real-world diagnostic accuracy.
+
 ## Setup & Reproducibility
 
 Lumio was tested with Python and the following pinned dependencies:
